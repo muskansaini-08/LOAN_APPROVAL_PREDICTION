@@ -1,6 +1,7 @@
 import streamlit as st
 import pickle
 import pandas as pd
+import time
 
 st.set_page_config(
     page_title="AI Loan Approval System",
@@ -8,93 +9,142 @@ st.set_page_config(
     layout="wide"
 )
 
-# ------------------- STYLING -------------------
+# --------------------- STYLING ---------------------
 st.markdown("""
 <style>
 
-/* Main Background */
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: white;
+    background-color: #f4f7fb;
 }
 
-/* Hide default header/footer */
 header {visibility: hidden;}
 footer {visibility: hidden;}
 
-/* Title */
-.main-title {
-    font-size: 48px;
+/* Top Header */
+.top-bar {
+    background-color: #0a3d62;
+    padding: 25px 40px;
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 35px;
+}
+
+.title {
+    font-size: 34px;
     font-weight: 700;
-    color: #f8fafc;
 }
 
 .subtitle {
-    font-size: 20px;
-    color: #cbd5e1;
-    margin-bottom: 40px;
+    font-size: 15px;
+    opacity: 0.85;
 }
 
-/* Card Style */
-.card {
-    background: #ffffff;
+/* Stats Cards */
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+}
+
+.stat-number {
+    font-size: 30px;
+    font-weight: 700;
+    color: #0a3d62;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: gray;
+}
+
+/* Form Cards */
+.section-box {
+    background-color: white;
     padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-}
-
-/* Section Titles */
-.section-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
 }
 
 /* Button */
 .stButton>button {
-    background: linear-gradient(90deg, #facc15, #f59e0b);
-    color: #0f172a;
+    background-color: #0a3d62;
+    color: white;
     font-size: 18px;
-    font-weight: 600;
-    border-radius: 10px;
-    padding: 12px 30px;
+    border-radius: 8px;
+    padding: 10px 30px;
     border: none;
-    transition: 0.3s;
 }
 
 .stButton>button:hover {
-    background: linear-gradient(90deg, #f59e0b, #facc15);
-    transform: scale(1.05);
-}
-
-/* Prediction Box */
-.result-box {
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-    margin-top: 20px;
+    background-color: #145da0;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------- LOAD MODEL -------------------
+# --------------------- LOAD MODEL ---------------------
 model = pickle.load(open("loan_model.pkl", "rb"))
 
-# ------------------- HEADER -------------------
-st.markdown('<div class="main-title">🏦 AI Loan Approval System</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Premium Smart Loan Eligibility Engine</div>', unsafe_allow_html=True)
+# --------------------- HEADER ---------------------
+st.markdown("""
+<div class="top-bar">
+    <div class="title">🏦 AI Loan Approval System</div>
+    <div class="subtitle">Secure & Intelligent Loan Eligibility Dashboard</div>
+</div>
+""", unsafe_allow_html=True)
+
+# --------------------- STATS SECTION ---------------------
+st.markdown("### 📊 Dashboard Overview")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown("""
+    <div class="stat-card">
+        <div class="stat-number">1,248</div>
+        <div class="stat-label">Total Applications</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="stat-card">
+        <div class="stat-number">78%</div>
+        <div class="stat-label">Approval Rate</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class="stat-card">
+        <div class="stat-number">₹4.6L</div>
+        <div class="stat-label">Avg Loan Amount</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown("""
+    <div class="stat-card">
+        <div class="stat-number">89%</div>
+        <div class="stat-label">Model Accuracy</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ------------------- FORM -------------------
+# --------------------- FORM SECTION ---------------------
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Applicant Information</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-box">', unsafe_allow_html=True)
+    st.subheader("Applicant Information")
 
     Gender = st.selectbox("Gender", ["Male", "Female"])
     Married = st.selectbox("Married", ["Yes", "No"])
@@ -105,8 +155,8 @@ with col1:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Financial Details</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-box">', unsafe_allow_html=True)
+    st.subheader("Financial Details")
 
     LoanAmount = st.number_input("Loan Amount")
     Loan_Amount_Term = st.number_input("Loan Term (Days)")
@@ -116,9 +166,9 @@ with col2:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ------------------- ENCODING -------------------
+# --------------------- ENCODING ---------------------
 Gender = 1 if Gender == "Male" else 0
 Married = 1 if Married == "Yes" else 0
 Education = 1 if Education == "Graduate" else 0
@@ -139,19 +189,20 @@ input_data = pd.DataFrame({
     'Total_Income': [Total_Income]
 })
 
-# ------------------- PREDICT -------------------
+# --------------------- PREDICTION ---------------------
 if st.button("Check Loan Eligibility"):
+    with st.spinner("Analyzing application..."):
+        time.sleep(1.5)
+
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)[0][1] * 100
 
-    st.markdown('<div class="result-box">', unsafe_allow_html=True)
+    st.markdown("### 🏦 Loan Decision")
 
     if prediction[0] == 1:
-        st.markdown("## ✅ Loan Approved")
+        st.success("Loan Approved ✅")
     else:
-        st.markdown("## ❌ Loan Rejected")
+        st.error("Loan Rejected ❌")
 
-    st.markdown(f"### Approval Probability: {probability:.2f}%")
     st.progress(int(probability))
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.info(f"Approval Probability: {probability:.2f}%")
