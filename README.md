@@ -2,15 +2,16 @@
 
 > An end-to-end Machine Learning system that predicts whether a loan application will be **Approved ✅ or Rejected ❌** using applicant financial and demographic data.
 
-This project demonstrates a complete ML workflow — including data preprocessing, feature engineering, model comparison, evaluation, and final model selection — along with a lightweight standalone web interface.
+🚀 **Live App:**  
+👉 https://muskan-loan-approval-ml.streamlit.app/
 
 ---
 
 ## 📌 Project Overview
 
-| 📘 Notebook | 🌐 Web App | 🏆 Best Model | 🤖 Models Compared |
+| 📘 Notebook | 🌐 Live App | 🏆 Best Model | 🤖 Models Compared |
 |------------|------------|---------------|-------------------|
-| `LOAN_PREDICTION_PROJECT.ipynb` | `loan_approval_app.html` | Random Forest Classifier | 7 Classification Algorithms |
+| `LOAN_PREDICTION_PROJECT.ipynb` | Streamlit Web App | Random Forest Classifier | 7 Classification Algorithms |
 
 ---
 
@@ -18,11 +19,35 @@ This project demonstrates a complete ML workflow — including data preprocessin
 
 To build a reliable classification model that assists in predicting loan approval decisions based on applicant information.
 
+This project demonstrates a complete ML workflow including:
+
+- Data preprocessing  
+- Feature engineering  
+- Model comparison  
+- Performance evaluation  
+- Final model deployment using **Streamlit**
+
+---
+
+## 🌐 Live Deployment
+
+The model has been successfully deployed using **Streamlit Cloud**.
+
+🔗 **Access the application here:**  
+https://muskan-loan-approval-ml.streamlit.app/
+
+### ✨ Web App Features
+
+- Clean and interactive loan application form  
+- Real-time loan approval prediction  
+- Modern fintech-style UI  
+- Responsive layout  
+- Instant result display (Approved ✅ / Rejected ❌)  
+- Deployed using Streamlit  
+
 ---
 
 ## 🧠 Machine Learning Pipeline
-
-The project follows a structured approach:
 
 - 📊 Exploratory Data Analysis (EDA)  
 - 🧹 Data Cleaning  
@@ -31,14 +56,13 @@ The project follows a structured approach:
 - 🤖 Training Multiple Classification Models  
 - 📈 Model Evaluation (Accuracy, Confusion Matrix, ROC Curve)  
 - 🏆 Best Model Selection  
+- 🚀 Model Deployment with Streamlit  
 
 ---
 
 ## 📊 Dataset Information
 
-The dataset used in this project is:
-
-**`loan.csv`**
+**Dataset:** `loan.csv`
 
 It contains applicant financial and demographic information used to determine loan approval status.
 
@@ -74,7 +98,7 @@ The following classification algorithms were trained and evaluated:
 - Gradient Boosting  
 - Decision Tree  
 
-After performance comparison and validation, **Random Forest Classifier** was selected as the final model.
+🏆 **Final Selected Model:** Random Forest Classifier
 
 ---
 
@@ -84,7 +108,7 @@ After performance comparison and validation, **Random Forest Classifier** was se
 LOAN_APPROVAL_PREDICTION/
 │
 ├── LOAN_PREDICTION_PROJECT.ipynb   # Complete ML pipeline
-├── loan_approval_app.html          # Standalone web interface
+├── app.py                          # Streamlit web app
 ├── loan.csv                        # Dataset
 ├── requirements.txt                # Dependencies
 └── README.md                       # Documentation
@@ -92,55 +116,25 @@ LOAN_APPROVAL_PREDICTION/
 
 ---
 
-## 🌐 Web Application
-
-A lightweight standalone frontend interface is included.
-
-### ✨ Features
-
-- Clean and user-friendly loan input form  
-- Instant approval/rejection result display  
-- Responsive layout  
-- Built using HTML, CSS, and JavaScript  
-- No backend required  
-
-### ▶️ To Run the Web App
-
-Open:
-
-```
-loan_approval_app.html
-```
-
-in any modern browser.
-
----
-
-## ⚙️ Installation & Setup
+## ⚙️ Installation & Setup (Run Locally)
 
 Clone the repository:
 
-```
+```bash
 git clone https://github.com/your-username/LOAN_APPROVAL_PREDICTION.git
 cd LOAN_APPROVAL_PREDICTION
 ```
 
 Install dependencies:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-Run the notebook:
+Run the Streamlit app:
 
-```
-jupyter notebook
-```
-
-Then open:
-
-```
-LOAN_PREDICTION_PROJECT.ipynb
+```bash
+streamlit run app.py
 ```
 
 ---
@@ -153,7 +147,7 @@ LOAN_PREDICTION_PROJECT.ipynb
 - Matplotlib  
 - Seaborn  
 - Scikit-learn  
-- HTML, CSS, JavaScript  
+- Streamlit  
 
 ---
 
@@ -161,9 +155,10 @@ LOAN_PREDICTION_PROJECT.ipynb
 
 - Hyperparameter tuning  
 - Feature importance visualization  
-- Model deployment using Streamlit or Flask  
-- Cloud hosting  
+- Probability score display  
 - REST API integration  
+- Docker containerization  
+- Cloud deployment (AWS / Azure / GCP)
 
 ---
 
