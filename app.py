@@ -8,69 +8,93 @@ st.set_page_config(
     layout="wide"
 )
 
-# Clean modern styling
+# ------------------- STYLING -------------------
 st.markdown("""
 <style>
-/* Background */
+
+/* Main Background */
 [data-testid="stAppViewContainer"] {
-    background-color: #eef2f7;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
 }
 
-/* Hide Streamlit header */
+/* Hide default header/footer */
 header {visibility: hidden;}
 footer {visibility: hidden;}
 
-/* Main title */
-.title {
-    font-size: 42px;
+/* Title */
+.main-title {
+    font-size: 48px;
     font-weight: 700;
-    color: #1e293b;
+    color: #f8fafc;
 }
 
 .subtitle {
-    font-size: 18px;
-    color: #64748b;
-    margin-bottom: 30px;
+    font-size: 20px;
+    color: #cbd5e1;
+    margin-bottom: 40px;
 }
 
-/* Card */
+/* Card Style */
 .card {
-    background: white;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 20px;
 }
 
 /* Button */
 .stButton>button {
-    background-color: #2563eb;
-    color: white;
+    background: linear-gradient(90deg, #facc15, #f59e0b);
+    color: #0f172a;
     font-size: 18px;
-    border-radius: 8px;
-    padding: 10px 28px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 12px 30px;
     border: none;
+    transition: 0.3s;
 }
 
 .stButton>button:hover {
-    background-color: #1e40af;
+    background: linear-gradient(90deg, #f59e0b, #facc15);
+    transform: scale(1.05);
 }
+
+/* Prediction Box */
+.result-box {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 20px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# Load model
+# ------------------- LOAD MODEL -------------------
 model = pickle.load(open("loan_model.pkl", "rb"))
 
-# Header
-st.markdown('<div class="title">🏦 AI Loan Approval System</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Smart Loan Eligibility Prediction using Machine Learning</div>', unsafe_allow_html=True)
+# ------------------- HEADER -------------------
+st.markdown('<div class="main-title">🏦 AI Loan Approval System</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Premium Smart Loan Eligibility Engine</div>', unsafe_allow_html=True)
 
-st.markdown("")
+st.markdown("<br>", unsafe_allow_html=True)
 
+# ------------------- FORM -------------------
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Applicant Information")
+    st.markdown('<div class="section-title">Applicant Information</div>', unsafe_allow_html=True)
 
     Gender = st.selectbox("Gender", ["Male", "Female"])
     Married = st.selectbox("Married", ["Yes", "No"])
@@ -82,19 +106,19 @@ with col1:
 
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Financial Details")
+    st.markdown('<div class="section-title">Financial Details</div>', unsafe_allow_html=True)
 
-    LoanAmount = st.number_input("Loan Amount", min_value=0.0)
-    Loan_Amount_Term = st.number_input("Loan Term (Days)", min_value=0.0)
+    LoanAmount = st.number_input("Loan Amount")
+    Loan_Amount_Term = st.number_input("Loan Term (Days)")
     Credit_History = st.selectbox("Credit History", [1.0, 0.0])
     Property_Area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
-    Total_Income = st.number_input("Total Income", min_value=0.0)
+    Total_Income = st.number_input("Total Income")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("")
+st.markdown("<br><br>", unsafe_allow_html=True)
 
-# Encoding
+# ------------------- ENCODING -------------------
 Gender = 1 if Gender == "Male" else 0
 Married = 1 if Married == "Yes" else 0
 Education = 1 if Education == "Graduate" else 0
@@ -115,18 +139,19 @@ input_data = pd.DataFrame({
     'Total_Income': [Total_Income]
 })
 
-st.markdown("<br>", unsafe_allow_html=True)
-
-if st.button("Predict Loan Status"):
+# ------------------- PREDICT -------------------
+if st.button("Check Loan Eligibility"):
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)[0][1] * 100
 
-    st.markdown("### Prediction Result")
+    st.markdown('<div class="result-box">', unsafe_allow_html=True)
 
     if prediction[0] == 1:
-        st.success("Loan Approved ✅")
+        st.markdown("## ✅ Loan Approved")
     else:
-        st.error("Loan Rejected ❌")
+        st.markdown("## ❌ Loan Rejected")
 
-    st.info(f"Approval Probability: {probability:.2f}%")
+    st.markdown(f"### Approval Probability: {probability:.2f}%")
     st.progress(int(probability))
+
+    st.markdown('</div>', unsafe_allow_html=True)
