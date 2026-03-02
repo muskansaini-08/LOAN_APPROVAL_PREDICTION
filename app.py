@@ -8,80 +8,91 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔥 PREMIUM DARK THEME
+# Clean modern styling
 st.markdown("""
 <style>
+/* Background */
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: white;
+    background-color: #eef2f7;
 }
 
-.big-title {
-    font-size: 48px;
-    font-weight: bold;
-    color: #00d4ff;
+/* Hide Streamlit header */
+header {visibility: hidden;}
+footer {visibility: hidden;}
+
+/* Main title */
+.title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #1e293b;
 }
 
 .subtitle {
-    font-size: 20px;
-    color: #cfd8dc;
+    font-size: 18px;
+    color: #64748b;
     margin-bottom: 30px;
 }
 
-.section-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    color: #00e5ff;
+/* Card */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
+/* Button */
 .stButton>button {
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    background-color: #2563eb;
     color: white;
     font-size: 18px;
-    border-radius: 15px;
-    padding: 10px 30px;
+    border-radius: 8px;
+    padding: 10px 28px;
     border: none;
 }
 
-.stSelectbox, .stNumberInput {
-    background-color: #1e2a38 !important;
-    color: white !important;
-    border-radius: 10px;
+.stButton>button:hover {
+    background-color: #1e40af;
 }
-
-footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Load Model
+# Load model
 model = pickle.load(open("loan_model.pkl", "rb"))
 
 # Header
-st.markdown('<div class="big-title">🏦 AI Loan Approval System</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">🏦 AI Loan Approval System</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Smart Loan Eligibility Prediction using Machine Learning</div>', unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown("")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown('<div class="section-title">👤 Applicant Information</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Applicant Information")
+
     Gender = st.selectbox("Gender", ["Male", "Female"])
     Married = st.selectbox("Married", ["Yes", "No"])
     Dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
     Education = st.selectbox("Education", ["Graduate", "Not Graduate"])
     Self_Employed = st.selectbox("Self Employed", ["Yes", "No"])
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
 with col2:
-    st.markdown('<div class="section-title">💰 Financial Details</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Financial Details")
+
     LoanAmount = st.number_input("Loan Amount", min_value=0.0)
     Loan_Amount_Term = st.number_input("Loan Term (Days)", min_value=0.0)
     Credit_History = st.selectbox("Credit History", [1.0, 0.0])
     Property_Area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
     Total_Income = st.number_input("Total Income", min_value=0.0)
 
-st.markdown("---")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("")
 
 # Encoding
 Gender = 1 if Gender == "Male" else 0
@@ -104,22 +115,18 @@ input_data = pd.DataFrame({
     'Total_Income': [Total_Income]
 })
 
-if st.button("🚀 Predict Loan Status"):
+st.markdown("<br>", unsafe_allow_html=True)
+
+if st.button("Predict Loan Status"):
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)[0][1] * 100
 
-    st.markdown("## 📊 Prediction Result")
+    st.markdown("### Prediction Result")
 
     if prediction[0] == 1:
-        st.success("✅ Loan Approved")
+        st.success("Loan Approved ✅")
     else:
-        st.error("❌ Loan Rejected")
+        st.error("Loan Rejected ❌")
 
-    st.info(f"📈 Approval Probability: {probability:.2f}%")
+    st.info(f"Approval Probability: {probability:.2f}%")
     st.progress(int(probability))
-
-st.markdown("""
-<div style="text-align:center; margin-top:40px; color:#90a4ae;">
-Built with ❤️ using Machine Learning & Streamlit
-</div>
-""", unsafe_allow_html=True)
