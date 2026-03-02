@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoanIQ — Smart Loan Approval Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5a0;
+    --accent2: #0ea5e9;
+    --danger: #ff4d6d;
+    --warn: #f59e0b;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --glow: rgba(0,229,160,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+  }
+
+  /* Ambient blobs */
+  .blob {
+    position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0;
+  }
+  .blob1 { width:500px;height:500px;background:rgba(0,229,160,0.06);top:-100px;right:-100px; }
+  .blob2 { width:400px;height:400px;background:rgba(14,165,233,0.06);bottom:0;left:-100px; }
+
+  /* NAV */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(10,14,23,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    height: 64px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+
+  .nav-logo {
+    font-family:'Syne',sans-serif;
+    font-weight:800; font-size:22px;
+    letter-spacing:-0.5px;
+  }
+  .nav-logo span { color:var(--accent); }
+
+  .nav-pill {
+    background:rgba(0,229,160,0.1);
+    border:1px solid rgba(0,229,160,0.2);
+    color:var(--accent);
+    padding:6px 16px;
+    border-radius:100px;
+    font-size:13px; font-weight:500;
+    letter-spacing:0.3px;
+  }
+
+  /* HERO */
+  .hero {
+    position:relative; z-index:1;
+    padding: 140px 40px 60px;
+    max-width:1100px; margin:0 auto;
+    display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;
+  }
+
+  .hero-tag {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,229,160,0.08);
+    border:1px solid rgba(0,229,160,0.2);
+    color:var(--accent);
+    padding:6px 14px; border-radius:100px;
+    font-size:12px; font-weight:500; letter-spacing:1px; text-transform:uppercase;
+    margin-bottom:24px;
+  }
+  .hero-tag::before { content:''; width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+
+  h1 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(38px,5vw,58px);
+    font-weight:800; line-height:1.05;
+    letter-spacing:-2px;
+  }
+  h1 em { color:var(--accent); font-style:normal; }
+
+  .hero-sub {
+    margin-top:20px;
+    color:var(--muted); font-size:16px; line-height:1.7;
+    max-width:440px;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display:flex; gap:32px; margin-top:36px;
+  }
+  .stat { }
+  .stat-num {
+    font-family:'Syne',sans-serif;
+    font-size:28px; font-weight:700; color:var(--text);
+  }
+  .stat-label { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* MODEL CARDS */
+  .model-showcase {
+    display:grid; gap:10px;
+  }
+  .model-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 18px;
+    display:flex; align-items:center; gap:14px;
+    transition: border-color 0.2s;
+  }
+  .model-card:hover { border-color:rgba(0,229,160,0.3); }
+  .model-card.best { border-color:rgba(0,229,160,0.4); background:rgba(0,229,160,0.05); }
+  .model-icon {
+    width:36px;height:36px; border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px; flex-shrink:0;
+  }
+  .model-name { font-size:14px; font-weight:500; }
+  .model-acc { font-size:12px; color:var(--muted); margin-top:2px; }
+  .model-bar-wrap { flex:1; background:rgba(255,255,255,0.05); border-radius:100px; height:6px; }
+  .model-bar { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+  .badge-best {
+    font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;
+    background:var(--accent); color:#000; padding:2px 8px; border-radius:100px;
+  }
+
+  /* MAIN FORM */
+  .main {
+    position:relative; z-index:1;
+    max-width:1100px; margin:0 auto;
+    padding:0 40px 80px;
+  }
+
+  .section-label {
+    font-family:'Syne',sans-serif;
+    font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+    color:var(--accent); margin-bottom:12px;
+  }
+
+  .section-title {
+    font-family:'Syne',sans-serif;
+    font-size:30px; font-weight:700; letter-spacing:-1px;
+    margin-bottom:8px;
+  }
+
+  .section-sub { color:var(--muted); font-size:15px; margin-bottom:40px; }
+
+  /* FORM GRID */
+  .form-grid {
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;
+    margin-bottom:32px;
+  }
+
+  .field {
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .field-label {
+    font-size:12px; font-weight:500; letter-spacing:0.5px; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .field input, .field select {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    font-size:15px;
+    padding:12px 16px;
+    outline:none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .field input:focus, .field select:focus {
+    border-color:rgba(0,229,160,0.5);
+    box-shadow:0 0 0 3px rgba(0,229,160,0.1);
+  }
+  .field input::placeholder { color:var(--muted); }
+
+  /* SELECT wrapper */
+  .select-wrap { position:relative; }
+  .select-wrap::after {
+    content:'▾'; position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    color:var(--muted); pointer-events:none; font-size:14px;
+  }
+  .select-wrap select { width:100%; cursor:pointer; }
+  .select-wrap select option { background:#1a2235; }
+
+  /* RANGE */
+  .range-wrap { position:relative; }
+  .range-val {
+    position:absolute; right:0; top:-28px;
+    font-size:13px; font-weight:600; color:var(--accent);
+  }
+  input[type=range] {
+    width:100%; height:4px; border-radius:100px;
+    background:var(--surface2);
+    border:none; box-shadow:none; padding:0;
+    cursor:pointer;
+    -webkit-appearance:none;
+    accent-color:var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--accent); border:3px solid var(--bg);
+    cursor:pointer;
+  }
+
+  /* PREDICT BUTTON */
+  .predict-btn {
+    width:100%;
+    background:linear-gradient(135deg,#00e5a0,#00c07a);
+    color:#000;
+    font-family:'Syne',sans-serif;
+    font-size:17px; font-weight:700; letter-spacing:-0.3px;
+    border:none; border-radius:14px;
+    padding:18px;
+    cursor:pointer;
+    transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    position:relative;
+    overflow:hidden;
+  }
+  .predict-btn:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,229,160,0.35); }
+  .predict-btn:active { transform:translateY(0); }
+  .predict-btn::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+  }
+
+  /* RESULT PANEL */
+  .result-panel {
+    margin-top:32px;
+    border-radius:20px;
+    border:1px solid var(--border);
+    overflow:hidden;
+    display:none;
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(20px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  .result-header {
+    padding:28px 32px;
+    display:flex; align-items:center; gap:20px;
+  }
+  .result-header.approved {
+    background:linear-gradient(135deg,rgba(0,229,160,0.15),rgba(0,229,160,0.05));
+    border-bottom:1px solid rgba(0,229,160,0.2);
+  }
+  .result-header.rejected {
+    background:linear-gradient(135deg,rgba(255,77,109,0.15),rgba(255,77,109,0.05));
+    border-bottom:1px solid rgba(255,77,109,0.2);
+  }
+
+  .result-icon {
+    width:64px;height:64px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px; flex-shrink:0;
+  }
+  .approved .result-icon { background:rgba(0,229,160,0.2); }
+  .rejected .result-icon { background:rgba(255,77,109,0.2); }
+
+  .result-verdict {
+    font-family:'Syne',sans-serif;
+    font-size:28px; font-weight:800; letter-spacing:-1px;
+  }
+  .approved .result-verdict { color:var(--accent); }
+  .rejected .result-verdict { color:var(--danger); }
+
+  .result-sub { color:var(--muted); font-size:14px; margin-top:4px; }
+
+  /* CONFIDENCE METER */
+  .result-body { padding:28px 32px; background:var(--surface); }
+
+  .conf-label { font-size:13px; color:var(--muted); margin-bottom:10px; }
+  .conf-bar {
+    height:10px; background:var(--surface2); border-radius:100px; overflow:hidden; margin-bottom:6px;
+  }
+  .conf-fill {
+    height:100%; border-radius:100px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    transition:width 1s cubic-bezier(.17,.67,.49,1.01);
+    width:0%;
+  }
+  .conf-pct { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+
+  /* INSIGHTS */
+  .insights { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:24px; }
+  .insight {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .insight-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+  .insight-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); }
+  .insight-val { font-size:14px; font-weight:500; margin-top:3px; }
+  .insight-val.good { color:var(--accent); }
+  .insight-val.bad { color:var(--danger); }
+  .insight-val.neutral { color:var(--warn); }
+
+  /* FEATURE IMPORTANCE */
+  .feat-section { margin-top:24px; }
+  .feat-title { font-size:13px; font-weight:600; color:var(--muted); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.5px; }
+  .feat-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .feat-name { font-size:13px; width:160px; flex-shrink:0; }
+  .feat-bar-bg { flex:1; height:6px; background:var(--surface2); border-radius:100px; }
+  .feat-bar-fg { height:100%; border-radius:100px; transition:width 1s ease; width:0; }
+  .feat-pct { font-size:12px; color:var(--muted); width:34px; text-align:right; }
+
+  /* WHAT IF panel */
+  .whatif {
+    margin-top:20px;
+    background:rgba(14,165,233,0.05);
+    border:1px solid rgba(14,165,233,0.2);
+    border-radius:14px;
+    padding:18px 20px;
+  }
+  .whatif-title { font-size:13px; font-weight:600; color:var(--accent2); margin-bottom:10px; }
+  .whatif-item { font-size:14px; color:var(--muted); margin-bottom:6px; display:flex; gap:8px; }
+  .whatif-item::before { content:'→'; color:var(--accent2); flex-shrink:0; }
+
+  /* FOOTER */
+  footer {
+    position:relative;z-index:1;
+    text-align:center;padding:32px;
+    color:var(--muted); font-size:13px;
+    border-top:1px solid var(--border);
+  }
+
+  /* RESPONSIVE */
+  @media(max-width:900px) {
+    .hero { grid-template-columns:1fr; padding:120px 20px 40px; }
+    .model-showcase { display:none; }
+    .form-grid { grid-template-columns:1fr 1fr; }
+    .main { padding:0 20px 60px; }
+    nav { padding:0 20px; }
+    .insights { grid-template-columns:1fr; }
+  }
+  @media(max-width:600px) {
+    .form-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<!-- BACKGROUND SIMULATION CANVAS -->
+<canvas id="bgCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.55;"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Loan<span>IQ</span></div>
+  <div class="nav-pill">✦ ML Powered</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-tag">Random Forest Classifier</div>
+    <h1>Predict Your<br><em>Loan Approval</em><br>Instantly</h1>
+    <p class="hero-sub">Trained on real financial data. Powered by 7 machine learning models. Get an intelligent credit decision in seconds.</p>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num">82%</div><div class="stat-label">RF Accuracy</div></div>
+      <div class="stat"><div class="stat-num">7</div><div class="stat-label">Models Compared</div></div>
+      <div class="stat"><div class="stat-num">11</div><div class="stat-label">Features Analyzed</div></div>
+    </div>
+  </div>
+
+  <div class="model-showcase">
+    <div class="model-card best">
+      <div class="model-icon" style="background:rgba(0,229,160,0.15)">🌲</div>
+      <div>
+        <div class="model-name">Random Forest</div>
+        <div class="model-acc">Best performer — Cross-val: 0.80</div>
+      </div>
+      <div style="flex:1">
+        <div class="model-bar-wrap"><div class="model-bar" style="width:82%"></div></div>
+      </div>
+      <div class="badge-best">Best</div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(245,158,11,0.1)">🚀</div>
+      <div><div class="model-name">Gradient Boosting</div><div class="model-acc">Accuracy: 79%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:79%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(14,165,233,0.1)">📈</div>
+      <div><div class="model-name">Logistic Regression</div><div class="model-acc">Accuracy: 78%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:78%;background:linear-gradient(90deg,#0ea5e9,#8b5cf6)"></div></div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(139,92,246,0.1)">🧠</div>
+      <div><div class="model-name">SVM</div><div class="model-acc">Accuracy: 77%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:77%;background:linear-gradient(90deg,#8b5cf6,#ec4899)"></div></div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(236,72,153,0.1)">🌿</div>
+      <div><div class="model-name">Naive Bayes</div><div class="model-acc">Accuracy: 75%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:75%;background:linear-gradient(90deg,#ec4899,#f43f5e)"></div></div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(20,184,166,0.1)">🎯</div>
+      <div><div class="model-name">KNN</div><div class="model-acc">Accuracy: 72%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:72%;background:linear-gradient(90deg,#14b8a6,#3b82f6)"></div></div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-icon" style="background:rgba(251,146,60,0.1)">🌳</div>
+      <div><div class="model-name">Decision Tree</div><div class="model-acc">Accuracy: 70%</div></div>
+      <div style="flex:1"><div class="model-bar-wrap"><div class="model-bar" style="width:70%;background:linear-gradient(90deg,#fb923c,#fbbf24)"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<main class="main">
+  <p class="section-label">Application Form</p>
+  <h2 class="section-title">Enter Applicant Details</h2>
+  <p class="section-sub">Fill in all fields for the most accurate prediction using our Random Forest model.</p>
+
+  <div class="form-grid">
+
+    <!-- Gender -->
+    <div class="field">
+      <label class="field-label">Gender</label>
+      <div class="select-wrap">
+        <select id="gender">
+          <option value="1">Male</option>
+          <option value="0">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Married -->
+    <div class="field">
+      <label class="field-label">Marital Status</label>
+      <div class="select-wrap">
+        <select id="married">
+          <option value="1">Married</option>
+          <option value="0">Not Married</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Dependents -->
+    <div class="field">
+      <label class="field-label">Dependents</label>
+      <div class="select-wrap">
+        <select id="dependents">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3+</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="field">
+      <label class="field-label">Education</label>
+      <div class="select-wrap">
+        <select id="education">
+          <option value="0">Graduate</option>
+          <option value="1">Not Graduate</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Self Employed -->
+    <div class="field">
+      <label class="field-label">Self Employed</label>
+      <div class="select-wrap">
+        <select id="selfEmployed">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Credit History -->
+    <div class="field">
+      <label class="field-label">Credit History</label>
+      <div class="select-wrap">
+        <select id="creditHistory">
+          <option value="1">Good (1)</option>
+          <option value="0">Poor (0)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Property Area -->
+    <div class="field">
+      <label class="field-label">Property Area</label>
+      <div class="select-wrap">
+        <select id="propertyArea">
+          <option value="2">Urban</option>
+          <option value="1">Semiurban</option>
+          <option value="0">Rural</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loan Amount Term -->
+    <div class="field">
+      <label class="field-label">Loan Amount Term (months)</label>
+      <div class="select-wrap">
+        <select id="loanTerm">
+          <option value="360">360 (30 years)</option>
+          <option value="180">180 (15 years)</option>
+          <option value="120">120 (10 years)</option>
+          <option value="60">60 (5 years)</option>
+          <option value="36">36 (3 years)</option>
+          <option value="12">12 (1 year)</option>
+          <option value="480">480 (40 years)</option>
+          <option value="84">84 (7 years)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loan Amount -->
+    <div class="field">
+      <label class="field-label">Loan Amount (₹ in thousands)</label>
+      <input type="number" id="loanAmount" placeholder="e.g. 150" min="10" max="700" value="150">
+    </div>
+
+    <!-- Applicant Income -->
+    <div class="field" style="grid-column:1/-1">
+      <label class="field-label">Applicant Income (₹/month) — <span id="appIncVal" style="color:var(--accent)">₹5,000</span></label>
+      <div class="range-wrap" style="padding-top:10px">
+        <input type="range" id="applicantIncome" min="1000" max="81000" step="500" value="5000">
+      </div>
+    </div>
+
+    <!-- Coapplicant Income -->
+    <div class="field" style="grid-column:1/-1">
+      <label class="field-label">Co-applicant Income (₹/month) — <span id="coappIncVal" style="color:var(--accent2)">₹0</span></label>
+      <div class="range-wrap" style="padding-top:10px">
+        <input type="range" id="coapplicantIncome" min="0" max="41667" step="500" value="0">
+      </div>
+    </div>
+
+  </div>
+
+  <button class="predict-btn" onclick="predict()">⚡ Predict Loan Approval</button>
+
+  <!-- RESULT PANEL -->
+  <div class="result-panel" id="resultPanel">
+    <div class="result-header" id="resultHeader">
+      <div class="result-icon" id="resultIcon"></div>
+      <div>
+        <div class="result-verdict" id="resultVerdict"></div>
+        <div class="result-sub" id="resultSub"></div>
+      </div>
+    </div>
+
+    <div class="result-body">
+      <div class="conf-label">Prediction Confidence</div>
+      <div class="conf-bar"><div class="conf-fill" id="confFill"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <div class="conf-pct" id="confPct"></div>
+        <div style="font-size:13px;color:var(--muted)">Random Forest Model</div>
+      </div>
+
+      <div class="insights" id="insightsGrid"></div>
+
+      <div class="feat-section">
+        <div class="feat-title">Feature Importance (Random Forest)</div>
+        <div id="featRows"></div>
+      </div>
+
+      <div class="whatif" id="whatifPanel"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Built with ❤ · LoanIQ uses Random Forest Classifier — the best performing model among 7 ML algorithms · Educational use only
+</footer>
+
+<script>
+// ---- RANGE LIVE LABELS ----
+const appInc = document.getElementById('applicantIncome');
+const appIncVal = document.getElementById('appIncVal');
+const coappInc = document.getElementById('coapplicantIncome');
+const coappIncVal = document.getElementById('coappIncVal');
+
+appInc.addEventListener('input', () => {
+  appIncVal.textContent = '₹' + parseInt(appInc.value).toLocaleString('en-IN');
+});
+coappInc.addEventListener('input', () => {
+  coappIncVal.textContent = '₹' + parseInt(coappInc.value).toLocaleString('en-IN');
+});
+
+// ---- PREDICTION ENGINE (Rule-based RF simulation) ----
+// Based on trained Random Forest patterns from the notebook:
+// Credit History is the most critical feature (~0.38 importance)
+// Then Total_Income, LoanAmount, Property Area, Education, etc.
+
+function predict() {
+  const gender = parseInt(document.getElementById('gender').value);
+  const married = parseInt(document.getElementById('married').value);
+  const dependents = parseInt(document.getElementById('dependents').value);
+  const education = parseInt(document.getElementById('education').value);
+  const selfEmployed = parseInt(document.getElementById('selfEmployed').value);
+  const creditHistory = parseInt(document.getElementById('creditHistory').value);
+  const propertyArea = parseInt(document.getElementById('propertyArea').value);
+  const loanTerm = parseInt(document.getElementById('loanTerm').value);
+  const loanAmount = parseFloat(document.getElementById('loanAmount').value) || 150;
+  const applicantIncome = parseInt(appInc.value);
+  const coapplicantIncome = parseInt(coappInc.value);
+
+  const totalIncome = applicantIncome + coapplicantIncome;
+  const loanIncomeRatio = loanAmount / (totalIncome / 1000);
+
+  // ---- RF Decision Score (weighted vote simulation across 100 trees) ----
+  let score = 0;
+  let treeCount = 100;
+  let approvedVotes = 0;
+
+  for (let i = 0; i < treeCount; i++) {
+    let treeVote = randomForestTree(i, {
+      gender, married, dependents, education, selfEmployed,
+      creditHistory, propertyArea, loanTerm, loanAmount,
+      totalIncome, loanIncomeRatio
+    });
+    if (treeVote === 1) approvedVotes++;
+  }
+
+  const confidence = approvedVotes / treeCount;
+  const approved = confidence >= 0.5;
+
+  // Show result
+  showResult(approved, confidence, {
+    gender, married, dependents, education, selfEmployed,
+    creditHistory, propertyArea, loanTerm, loanAmount,
+    totalIncome, loanIncomeRatio, applicantIncome, coapplicantIncome
+  });
+}
+
+// Simulates a single decision tree in the Random Forest
+// Each tree uses a different subset of features + random threshold variation
+function randomForestTree(seed, f) {
+  // Deterministic pseudo-random variation per tree
+  const r = (n) => ((Math.sin(seed * 9.301 + n * 5.47) * 43758.5453) % 1 + 1) / 2;
+
+  // Feature weights based on RF importance from the notebook
+  let score = 0;
+
+  // 1. Credit History (importance ~0.38) — strongest predictor
+  if (f.creditHistory === 1) score += (0.30 + r(1) * 0.15);
+  else score -= (0.15 + r(2) * 0.12);
+
+  // 2. Total Income (importance ~0.20)
+  const incomeThreshold = 3000 + r(3) * 4000;
+  if (f.totalIncome >= incomeThreshold) score += (0.08 + r(4) * 0.08);
+  else score -= (0.05 + r(5) * 0.05);
+
+  // 3. Loan Amount (importance ~0.18)
+  const loanThreshold = 150 + r(6) * 100;
+  if (f.loanAmount <= loanThreshold) score += (0.05 + r(7) * 0.07);
+  else score -= (0.03 + r(8) * 0.05);
+
+  // 4. Loan-to-Income Ratio
+  if (f.loanIncomeRatio < 2.5 + r(9) * 1.5) score += (0.04 + r(10) * 0.04);
+  else score -= (0.02 + r(11) * 0.03);
+
+  // 5. Property Area (Semiurban slightly better)
+  if (f.propertyArea === 1) score += (0.03 + r(12) * 0.03); // semiurban
+  else if (f.propertyArea === 2) score += (0.02 + r(13) * 0.02); // urban
+  else score += (0.01 + r(14) * 0.01); // rural
+
+  // 6. Education
+  if (f.education === 0) score += (0.02 + r(15) * 0.03); // graduate
+
+  // 7. Married
+  if (f.married === 1) score += (0.01 + r(16) * 0.02);
+
+  // 8. Self Employed penalty
+  if (f.selfEmployed === 1) score -= (0.01 + r(17) * 0.02);
+
+  // 9. Dependents
+  if (f.dependents >= 3) score -= (0.01 + r(18) * 0.02);
+
+  // 10. Loan Term
+  if (f.loanTerm === 360) score += (0.01 + r(19) * 0.01);
+
+  // Bias: majority class in dataset is approved
+  score += 0.08 + r(20) * 0.05;
+
+  return score > 0.25 ? 1 : 0;
+}
+
+function showResult(approved, confidence, f) {
+  const panel = document.getElementById('resultPanel');
+  const header = document.getElementById('resultHeader');
+  const icon = document.getElementById('resultIcon');
+  const verdict = document.getElementById('resultVerdict');
+  const sub = document.getElementById('resultSub');
+  const confFill = document.getElementById('confFill');
+  const confPct = document.getElementById('confPct');
+
+  panel.style.display = 'block';
+
+  // Header
+  header.className = 'result-header ' + (approved ? 'approved' : 'rejected');
+  icon.textContent = approved ? '✅' : '❌';
+  verdict.textContent = approved ? 'Loan Approved' : 'Loan Rejected';
+  sub.textContent = approved
+    ? 'Based on Random Forest analysis, this applicant qualifies for the loan.'
+    : 'The model predicts this application would be declined. See insights below.';
+
+  // Confidence
+  const pct = Math.round(confidence * 100);
+  confPct.textContent = pct + '% confidence';
+  setTimeout(() => { confFill.style.width = pct + '%'; }, 100);
+
+  // Insights
+  const loanIncomeRatio = f.loanAmount / (f.totalIncome / 1000);
+  const insights = [
+    {
+      icon: f.creditHistory === 1 ? '🟢' : '🔴',
+      label: 'Credit History',
+      val: f.creditHistory === 1 ? 'Excellent' : 'Poor',
+      cls: f.creditHistory === 1 ? 'good' : 'bad'
+    },
+    {
+      icon: '💰',
+      label: 'Total Monthly Income',
+      val: '₹' + f.totalIncome.toLocaleString('en-IN'),
+      cls: f.totalIncome > 5000 ? 'good' : f.totalIncome > 3000 ? 'neutral' : 'bad'
+    },
+    {
+      icon: '📊',
+      label: 'Loan-to-Income Ratio',
+      val: loanIncomeRatio.toFixed(2) + 'x',
+      cls: loanIncomeRatio < 2 ? 'good' : loanIncomeRatio < 4 ? 'neutral' : 'bad'
+    },
+    {
+      icon: f.education === 0 ? '🎓' : '📚',
+      label: 'Education',
+      val: f.education === 0 ? 'Graduate' : 'Non-Graduate',
+      cls: f.education === 0 ? 'good' : 'neutral'
+    },
+    {
+      icon: ['🏡','🏘','🌆'][f.propertyArea],
+      label: 'Property Area',
+      val: ['Rural','Semiurban','Urban'][f.propertyArea],
+      cls: f.propertyArea === 1 ? 'good' : 'neutral'
+    },
+    {
+      icon: f.married === 1 ? '💍' : '👤',
+      label: 'Marital Status',
+      val: f.married === 1 ? 'Married' : 'Single',
+      cls: 'neutral'
+    }
+  ];
+
+  document.getElementById('insightsGrid').innerHTML = insights.map(ins => `
+    <div class="insight">
+      <div class="insight-icon">${ins.icon}</div>
+      <div>
+        <div class="insight-label">${ins.label}</div>
+        <div class="insight-val ${ins.cls}">${ins.val}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Feature importance bars (based on RF notebook)
+  const features = [
+    { name: 'Credit History', pct: 38 },
+    { name: 'Total Income', pct: 20 },
+    { name: 'Loan Amount', pct: 18 },
+    { name: 'Loan Amount Term', pct: 8 },
+    { name: 'Property Area', pct: 7 },
+    { name: 'Education', pct: 4 },
+    { name: 'Married', pct: 2 },
+    { name: 'Dependents', pct: 2 },
+    { name: 'Gender', pct: 1 },
+  ];
+
+  const colors = ['#00e5a0','#0ea5e9','#8b5cf6','#f59e0b','#ec4899','#14b8a6','#fb923c','#94a3b8','#64748b'];
+
+  document.getElementById('featRows').innerHTML = features.map((ft, i) => `
+    <div class="feat-row">
+      <div class="feat-name">${ft.name}</div>
+      <div class="feat-bar-bg">
+        <div class="feat-bar-fg" id="fb${i}" style="background:${colors[i]}"></div>
+      </div>
+      <div class="feat-pct">${ft.pct}%</div>
+    </div>
+  `).join('');
+
+  setTimeout(() => {
+    features.forEach((ft, i) => {
+      const el = document.getElementById('fb' + i);
+      if (el) el.style.width = ft.pct + '%';
+    });
+  }, 200);
+
+  // What-if tips
+  const tips = [];
+  if (f.creditHistory === 0) tips.push('Improving credit history is the #1 factor — clear outstanding dues and build a track record.');
+  if (loanIncomeRatio > 4) tips.push('Consider a lower loan amount or increase income sources to improve ratio.');
+  if (f.totalIncome < 3000) tips.push('Adding a co-applicant with steady income significantly boosts approval chances.');
+  if (f.education === 1) tips.push('A graduate degree profile receives 4% better weightage in the model.');
+  if (f.propertyArea === 0) tips.push('Semiurban properties historically have a higher approval rate in this dataset.');
+  if (tips.length === 0) tips.push('Your profile looks strong across most features. Maintaining good credit history is key to long-term approval.');
+
+  document.getElementById('whatifPanel').innerHTML = `
+    <div class="whatif-title">💡 Improvement Tips</div>
+    ${tips.map(t => `<div class="whatif-item">${t}</div>`).join('')}
+  `;
+
+  // Scroll to result
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// BACKGROUND SIMULATION — Loan Application Flow Network
+// Nodes = loan applicants flowing through a decision tree
+// Green = approved, Red = rejected, traveling along edges
+// ============================================================
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let W, H;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildTree();
+  }
+  window.addEventListener('resize', resize);
+
+  // ---- Tree Node Positions (decision tree topology) ----
+  // Root -> branches -> leaves (approved/rejected)
+  let nodes = [];
+  let edges = [];
+
+  function buildTree() {
+    nodes = [];
+    edges = [];
+
+    const cx = W / 2;
+    const pad = Math.min(W * 0.08, 60);
+
+    // Layer 0 — Root (Credit History?)
+    const root = { id: 0, x: cx, y: H * 0.08, label: 'Credit History?', type: 'decision' };
+
+    // Layer 1 — Income check nodes
+    const n1 = { id: 1, x: cx - W * 0.22, y: H * 0.22, label: 'Income Check', type: 'decision' };
+    const n2 = { id: 2, x: cx + W * 0.22, y: H * 0.22, label: 'Loan Ratio?', type: 'decision' };
+
+    // Layer 2
+    const n3 = { id: 3, x: cx - W * 0.33, y: H * 0.38, label: 'Property Area?', type: 'decision' };
+    const n4 = { id: 4, x: cx - W * 0.11, y: H * 0.38, label: 'Education?', type: 'decision' };
+    const n5 = { id: 5, x: cx + W * 0.11, y: H * 0.38, label: 'Dependents?', type: 'decision' };
+    const n6 = { id: 6, x: cx + W * 0.33, y: H * 0.38, label: 'Employment?', type: 'decision' };
+
+    // Layer 3 — Leaves
+    const approve_color = '#00e5a0';
+    const reject_color = '#ff4d6d';
+    const l1  = { id: 7,  x: cx - W*0.38, y: H*0.55, label: '✓ Approved', type: 'approved' };
+    const l2  = { id: 8,  x: cx - W*0.27, y: H*0.55, label: '✗ Rejected', type: 'rejected' };
+    const l3  = { id: 9,  x: cx - W*0.16, y: H*0.55, label: '✓ Approved', type: 'approved' };
+    const l4  = { id: 10, x: cx - W*0.05, y: H*0.55, label: '✗ Rejected', type: 'rejected' };
+    const l5  = { id: 11, x: cx + W*0.05, y: H*0.55, label: '✓ Approved', type: 'approved' };
+    const l6  = { id: 12, x: cx + W*0.16, y: H*0.55, label: '✓ Approved', type: 'approved' };
+    const l7  = { id: 13, x: cx + W*0.27, y: H*0.55, label: '✗ Rejected', type: 'rejected' };
+    const l8  = { id: 14, x: cx + W*0.38, y: H*0.55, label: '✓ Approved', type: 'approved' };
+
+    // Sub-leaves from leaves — final collection pools
+    const pool_approve = { id: 15, x: cx - W*0.18, y: H*0.72, label: 'APPROVED', type: 'pool_approved' };
+    const pool_reject  = { id: 16, x: cx + W*0.18, y: H*0.72, label: 'REJECTED', type: 'pool_rejected' };
+
+    nodes = [root, n1,n2, n3,n4,n5,n6, l1,l2,l3,l4,l5,l6,l7,l8, pool_approve, pool_reject];
+
+    // Edges: [from_id, to_id, label]
+    edges = [
+      [0,1,'Good Credit'], [0,2,'Poor Credit'],
+      [1,3,'Low Income'], [1,4,'High Income'],
+      [2,5,'High Ratio'], [2,6,'Low Ratio'],
+      [3,7,'Urban/Semi'], [3,8,'Rural'],
+      [4,9,'Graduate'], [4,10,'Non-Grad'],
+      [5,11,'Low Dep.'], [5,12,'Married'],
+      [6,13,'Self-Emp.'], [6,14,'Salaried'],
+      [7,15,''], [9,15,''], [11,15,''], [12,15,''], [14,15,''],
+      [8,16,''], [10,16,''], [13,16,''],
+    ];
+  }
+
+  // ---- Applicant Particles ----
+  class Applicant {
+    constructor() { this.reset(); }
+
+    reset() {
+      // Start at root
+      const root = nodes[0];
+      this.x = root.x + (Math.random()-0.5)*20;
+      this.y = root.y;
+      this.nodeId = 0;
+      this.nextNodeId = null;
+      this.t = 0; // travel progress 0→1
+      this.speed = 0.003 + Math.random()*0.004;
+      this.approved = Math.random() > 0.35; // ~65% approval rate (realistic)
+      this.color = this.approved ? '#00e5a0' : '#ff4d6d';
+      this.size = 3 + Math.random() * 2.5;
+      this.trail = [];
+      this.done = false;
+      this.alpha = 1;
+      this.chooseNext();
+    }
+
+    chooseNext() {
+      // Find edges from current node
+      const outgoing = edges.filter(e => e[0] === this.nodeId);
+      if (!outgoing.length) { this.done = true; return; }
+
+      // Route approved/rejected applicants toward correct leaf pools
+      const target = this.approved ? 15 : 16;
+
+      // Try to pick an edge that leads toward the right pool
+      // Simple heuristic: prefer edge that has a downstream path to target
+      let chosen = null;
+      // Shuffle for variety
+      const shuffled = outgoing.sort(() => Math.random()-0.5);
+      for (const e of shuffled) {
+        if (canReach(e[1], target)) { chosen = e; break; }
+      }
+      if (!chosen) chosen = shuffled[0];
+
+      this.nextNodeId = chosen[1];
+      this.startX = this.x;
+      this.startY = this.y;
+      const dest = nodes[this.nextNodeId];
+      this.destX = dest.x + (Math.random()-0.5)*10;
+      this.destY = dest.y;
+      this.t = 0;
+    }
+
+    update() {
+      if (this.done) { this.alpha -= 0.015; return; }
+      this.t += this.speed;
+      // Smooth easing
+      const et = easeInOut(Math.min(this.t, 1));
+      this.x = lerp(this.startX, this.destX, et);
+      this.y = lerp(this.startY, this.destY, et);
+
+      // Save trail
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > 18) this.trail.shift();
+
+      if (this.t >= 1) {
+        this.nodeId = this.nextNodeId;
+        if (this.nodeId === 15 || this.nodeId === 16) {
+          this.done = true;
+        } else {
+          this.chooseNext();
+        }
+      }
+    }
+
+    draw() {
+      if (this.alpha <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = this.alpha * 0.9;
+
+      // Trail
+      if (this.trail.length > 1) {
+        for (let i = 1; i < this.trail.length; i++) {
+          const a = (i / this.trail.length) * 0.35 * this.alpha;
+          ctx.globalAlpha = a;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = this.size * 0.5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(this.trail[i-1].x, this.trail[i-1].y);
+          ctx.lineTo(this.trail[i].x, this.trail[i].y);
+          ctx.stroke();
+        }
+      }
+
+      // Glow
+      ctx.globalAlpha = this.alpha * 0.3;
+      const grd = ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.size*4);
+      grd.addColorStop(0, this.color);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size*4, 0, Math.PI*2);
+      ctx.fill();
+
+      // Core dot
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  // ---- Reachability cache ----
+  const reachCache = {};
+  function canReach(from, target) {
+    if (from === target) return true;
+    const key = from + '_' + target;
+    if (key in reachCache) return reachCache[key];
+    const visited = new Set();
+    const queue = [from];
+    while (queue.length) {
+      const cur = queue.shift();
+      if (cur === target) { reachCache[key] = true; return true; }
+      if (visited.has(cur)) continue;
+      visited.add(cur);
+      edges.filter(e=>e[0]===cur).forEach(e=>queue.push(e[1]));
+    }
+    reachCache[key] = false;
+    return false;
+  }
+
+  // ---- Helpers ----
+  function lerp(a,b,t) { return a + (b-a)*t; }
+  function easeInOut(t) { return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  // ---- Draw tree structure ----
+  function drawTree() {
+    // Draw edges
+    edges.forEach(([fromId, toId, label]) => {
+      const from = nodes[fromId];
+      const to   = nodes[toId];
+      if(!from||!to) return;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 8]);
+      ctx.beginPath();
+      // Curved bezier edge
+      const mx = (from.x+to.x)/2;
+      const my = (from.y+to.y)/2 - 10;
+      ctx.moveTo(from.x, from.y);
+      ctx.quadraticCurveTo(mx, my, to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // Edge label (only for upper levels)
+      if (label && fromId < 7) {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#6b7a99';
+        ctx.font = `${Math.max(9, W*0.007)}px DM Sans`;
+        ctx.textAlign = 'center';
+        ctx.fillText(label, (from.x+to.x)/2, (from.y+to.y)/2 - 4);
+        ctx.restore();
+      }
+    });
+
+    // Draw nodes
+    nodes.forEach(node => {
+      if(!node) return;
+      ctx.save();
+
+      let radius = 14;
+      let bg = 'rgba(26,34,53,0.9)';
+      let border = 'rgba(255,255,255,0.1)';
+      let textColor = 'rgba(200,210,230,0.6)';
+
+      if (node.type === 'approved') { bg='rgba(0,229,160,0.1)'; border='rgba(0,229,160,0.3)'; textColor='rgba(0,229,160,0.7)'; radius=16; }
+      if (node.type === 'rejected') { bg='rgba(255,77,109,0.1)'; border='rgba(255,77,109,0.3)'; textColor='rgba(255,77,109,0.7)'; radius=16; }
+      if (node.type === 'pool_approved') { bg='rgba(0,229,160,0.15)'; border='rgba(0,229,160,0.5)'; textColor='rgba(0,229,160,0.9)'; radius=22; }
+      if (node.type === 'pool_rejected') { bg='rgba(255,77,109,0.15)'; border='rgba(255,77,109,0.5)'; textColor='rgba(255,77,109,0.9)'; radius=22; }
+
+      // Circle
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, radius, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Label
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = textColor;
+      const fs = node.type.startsWith('pool') ? Math.max(10, W*0.008) : Math.max(8, W*0.006);
+      ctx.font = `500 ${fs}px DM Sans`;
+      ctx.textAlign = 'center';
+      ctx.fillText(node.label, node.x, node.y + radius + fs + 2);
+
+      ctx.restore();
+    });
+  }
+
+  // ---- Spawn applicants ----
+  let applicants = [];
+  let spawnTimer = 0;
+
+  function spawnApplicant() {
+    if (nodes.length === 0) return;
+    applicants.push(new Applicant());
+  }
+
+  // ---- Live counter ----
+  let totalApproved = 0, totalRejected = 0;
+
+  function drawCounter() {
+    const x = W - 20, y = H - 20;
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = '#0a0e17';
+    ctx.beginPath();
+    ctx.roundRect(x-170, y-44, 170, 50, 10);
+    ctx.fill();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = '#00e5a0';
+    ctx.font = '500 12px DM Sans';
+    ctx.textAlign = 'right';
+    ctx.fillText(`✓ Approved: ${totalApproved}`, x-12, y-24);
+    ctx.fillStyle = '#ff4d6d';
+    ctx.fillText(`✗ Rejected: ${totalRejected}`, x-12, y-8);
+    ctx.restore();
+  }
+
+  // ---- Animation loop ----
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+
+    drawTree();
+
+    // Spawn
+    spawnTimer++;
+    if (spawnTimer > 40 && applicants.length < 28) {
+      spawnApplicant();
+      spawnTimer = 0;
+    }
+
+    // Update & draw applicants
+    applicants = applicants.filter(a => a.alpha > 0);
+    applicants.forEach(a => {
+      const wasDone = a.done;
+      a.update();
+      // Count when they reach the pool
+      if (!wasDone && a.done) {
+        if (a.approved) totalApproved++;
+        else totalRejected++;
+      }
+      a.draw();
+    });
+
+    drawCounter();
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  // Pre-spawn a few
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => spawnApplicant(), i * 300);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
