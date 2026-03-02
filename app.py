@@ -1,48 +1,60 @@
 import streamlit as st
 import pickle
 import pandas as pd
-import numpy as np
 
-# Page configuration
 st.set_page_config(
-    page_title="Loan Approval AI System",
+    page_title="AI Loan Approval System",
     page_icon="🏦",
     layout="wide"
 )
 
-# Custom CSS Styling
+# 🔥 PREMIUM DARK THEME
 st.markdown("""
 <style>
-body {
-    background-color: #f4f6f9;
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
 }
+
 .big-title {
-    font-size: 42px;
+    font-size: 48px;
     font-weight: bold;
-    color: #1f4e79;
+    color: #00d4ff;
 }
+
 .subtitle {
-    font-size: 18px;
-    color: gray;
+    font-size: 20px;
+    color: #cfd8dc;
     margin-bottom: 30px;
 }
-.footer {
-    margin-top: 50px;
-    text-align: center;
-    font-size: 14px;
-    color: gray;
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #00e5ff;
 }
+
 .stButton>button {
-    background-color: #1f77b4;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
     color: white;
     font-size: 18px;
-    border-radius: 12px;
+    border-radius: 15px;
     padding: 10px 30px;
+    border: none;
 }
+
+.stSelectbox, .stNumberInput {
+    background-color: #1e2a38 !important;
+    color: white !important;
+    border-radius: 10px;
+}
+
+footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Load model
+# Load Model
 model = pickle.load(open("loan_model.pkl", "rb"))
 
 # Header
@@ -51,11 +63,10 @@ st.markdown('<div class="subtitle">Smart Loan Eligibility Prediction using Machi
 
 st.markdown("---")
 
-# Layout
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("👤 Applicant Information")
+    st.markdown('<div class="section-title">👤 Applicant Information</div>', unsafe_allow_html=True)
     Gender = st.selectbox("Gender", ["Male", "Female"])
     Married = st.selectbox("Married", ["Yes", "No"])
     Dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
@@ -63,7 +74,7 @@ with col1:
     Self_Employed = st.selectbox("Self Employed", ["Yes", "No"])
 
 with col2:
-    st.subheader("💰 Financial Details")
+    st.markdown('<div class="section-title">💰 Financial Details</div>', unsafe_allow_html=True)
     LoanAmount = st.number_input("Loan Amount", min_value=0.0)
     Loan_Amount_Term = st.number_input("Loan Term (Days)", min_value=0.0)
     Credit_History = st.selectbox("Credit History", [1.0, 0.0])
@@ -93,26 +104,22 @@ input_data = pd.DataFrame({
     'Total_Income': [Total_Income]
 })
 
-# Prediction
 if st.button("🚀 Predict Loan Status"):
-
     prediction = model.predict(input_data)
     probability = model.predict_proba(input_data)[0][1] * 100
 
     st.markdown("## 📊 Prediction Result")
 
     if prediction[0] == 1:
-        st.success(f"✅ Loan Approved")
+        st.success("✅ Loan Approved")
     else:
-        st.error(f"❌ Loan Rejected")
+        st.error("❌ Loan Rejected")
 
     st.info(f"📈 Approval Probability: {probability:.2f}%")
-
-    # Risk meter
     st.progress(int(probability))
 
 st.markdown("""
-<div class="footer">
-Built with ❤️ using Streamlit | Machine Learning Portfolio Project
+<div style="text-align:center; margin-top:40px; color:#90a4ae;">
+Built with ❤️ using Machine Learning & Streamlit
 </div>
 """, unsafe_allow_html=True)
