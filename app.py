@@ -1,96 +1,92 @@
 import streamlit as st
-import pandas as pd
+import pickle
+import numpy as np
 
-st.set_page_config(
-    page_title="Loan Data Dashboard",
-    page_icon="🏦",
-    layout="wide"
-)
+# ---- PAGE CONFIG ----
+st.set_page_config(page_title="Loan Approval Predictor", page_icon="🏦", layout="wide")
 
-# -------------------- LOAD DATA --------------------
-df = pd.read_csv("loan.csv")
-
-# Convert Loan_Status to numeric
-if "Loan_Status" in df.columns:
-    df["Loan_Status"] = df["Loan_Status"].map({"Y": 1, "N": 0})
-
-# Basic cleaning
-df["LoanAmount"] = pd.to_numeric(df["LoanAmount"], errors="coerce")
-df = df.dropna(subset=["LoanAmount", "Loan_Status"])
-
-# -------------------- CALCULATIONS --------------------
-total_applications = len(df)
-approval_rate = df["Loan_Status"].mean() * 100
-avg_loan = df["LoanAmount"].mean()
-
-# -------------------- STYLING --------------------
+# ---- CUSTOM CSS ----
 st.markdown("""
 <style>
-[data-testid="stAppViewContainer"] {
-    background-color: #f4f7fb;
+body {
+    background-color: #f4f6f9;
 }
-.stat-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
-    text-align: center;
+.main {
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    padding: 2rem;
+    border-radius: 20px;
 }
-.stat-number {
-    font-size: 28px;
-    font-weight: bold;
-    color: #0a3d62;
+.card {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.1);
 }
-.stat-label {
-    color: gray;
+.stButton>button {
+    background-color: #1f4037;
+    color: white;
+    font-size: 18px;
+    border-radius: 10px;
+    padding: 10px 24px;
+}
+.stButton>button:hover {
+    background-color: #14532d;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------- HEADER --------------------
-st.title("🏦 Loan Dataset Analytics Dashboard")
-st.write("Real-time statistics calculated from uploaded dataset")
+# ---- LOAD MODEL ----
+model = pickle.load(open("loan_model.pkl", "rb"))
 
-st.markdown("---")
+# ---- HEADER ----
+st.markdown("<h1 style='text-align: center; color: white;'>🏦 Smart Loan Approval System</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: white;'>AI-powered Loan Eligibility Prediction</p>", unsafe_allow_html=True)
 
-# -------------------- KPI CARDS --------------------
-col1, col2, col3 = st.columns(3)
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+st.subheader("Enter Applicant Details")
+
+# ---- FORM LAYOUT ----
+col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown(f"""
-    <div class="stat-card">
-        <div class="stat-number">{total_applications:,}</div>
-        <div class="stat-label">Total Applications</div>
-    </div>
-    """, unsafe_allow_html=True)
+    gender = st.selectbox("Gender", ["Male", "Female"])
+    married = st.selectbox("Married", ["Yes", "No"])
+    dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
+    education = st.selectbox("Education", ["Graduate", "Not Graduate"])
+    self_employed = st.selectbox("Self Employed", ["Yes", "No"])
 
 with col2:
-    st.markdown(f"""
-    <div class="stat-card">
-        <div class="stat-number">{approval_rate:.2f}%</div>
-        <div class="stat-label">Approval Rate</div>
-    </div>
-    """, unsafe_allow_html=True)
+    applicant_income = st.number_input("Applicant Income", min_value=0)
+    coapplicant_income = st.number_input("Coapplicant Income", min_value=0)
+    loan_amount = st.number_input("Loan Amount", min_value=0)
+    loan_term = st.number_input("Loan Term (in days)", min_value=0)
+    credit_history = st.selectbox("Credit History", [1, 0])
+    property_area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
 
-with col3:
-    st.markdown(f"""
-    <div class="stat-card">
-        <div class="stat-number">₹{avg_loan:.0f}</div>
-        <div class="stat-label">Average Loan Amount</div>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-st.markdown("---")
+# ---- ENCODING ----
+gender = 1 if gender == "Male" else 0
+married = 1 if married == "Yes" else 0
+education = 1 if education == "Graduate" else 0
+self_employed = 1 if self_employed == "Yes" else 0
+dependents = 3 if dependents == "3+" else int(dependents)
+property_area = {"Urban": 2, "Semiurban": 1, "Rural": 0}[property_area]
 
-# -------------------- DATA PREVIEW --------------------
-st.subheader("📄 Dataset Preview")
-st.dataframe(df.head())
+input_data = np.array([[gender, married, dependents, education,
+                        self_employed, applicant_income,
+                        coapplicant_income, loan_amount,
+                        loan_term, credit_history, property_area]])
 
-# -------------------- BASIC INSIGHTS --------------------
-st.subheader("📊 Quick Insights")
+# ---- PREDICTION ----
+if st.button("🚀 Predict Loan Status"):
+    prediction = model.predict(input_data)
 
-approved = df[df["Loan_Status"] == 1]
-rejected = df[df["Loan_Status"] == 0]
+    if prediction[0] == 1:
+        st.success("✅ Congratulations! Loan Approved")
+        st.balloons()
+    else:
+        st.error("❌ Sorry! Loan Rejected")
 
-st.write(f"✅ Approved Applications: {len(approved)}")
-st.write(f"❌ Rejected Applications: {len(rejected)}")
+st.markdown("</div>", unsafe_allow_html=True)
