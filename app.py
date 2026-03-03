@@ -49,6 +49,7 @@ div.stButton > button:hover {
 # LOAD MODEL
 # ----------------------------------
 model = pickle.load(open("loan_model.pkl", "rb"))
+st.write("Model expects:", model.n_features_in_)
 
 # ----------------------------------
 # HEADER
@@ -82,7 +83,11 @@ with col1:
 def preprocess():
 
     dependents_map = {"0":0, "1":1, "2":2, "3+":3}
-    property_map = {"Rural":0, "Semiurban":1, "Urban":2}
+
+    # One-hot encoding for property area
+    rural = 1 if property_area == "Rural" else 0
+    semiurban = 1 if property_area == "Semiurban" else 0
+    urban = 1 if property_area == "Urban" else 0
 
     data = [
         1 if gender=="Male" else 0,
@@ -95,7 +100,9 @@ def preprocess():
         loan_amount,
         loan_term,
         1 if credit_history=="Good" else 0,
-        property_map[property_area]
+        rural,
+        semiurban,
+        urban
     ]
 
     return np.array(data).reshape(1, -1)
