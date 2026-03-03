@@ -1,73 +1,79 @@
 import streamlit as st
 import time
 
-# -----------------------------
-# PAGE CONFIG
-# -----------------------------
+# -------------------------------
+# Page Config
+# -------------------------------
 st.set_page_config(
     page_title="LoanIQ - Smart Loan Approval",
+    page_icon="🏦",
     layout="wide"
 )
 
-# -----------------------------
-# CUSTOM CSS
-# -----------------------------
+# -------------------------------
+# Custom CSS
+# -------------------------------
 st.markdown("""
 <style>
 
 /* ===== Background ===== */
 .stApp {
-    background: radial-gradient(circle at 20% 20%, #0f2027, #0b1a24 40%, #000814 100%);
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: white;
 }
 
-/* ===== Remove Top Padding ===== */
+/* Remove excessive top padding */
 .block-container {
     padding-top: 2rem;
+    padding-left: 4rem;
+    padding-right: 4rem;
 }
 
-/* ===== Hero Section ===== */
-.hero-title {
-    font-size: 60px;
+/* ===== Title ===== */
+.main-title {
+    font-size: 48px;
     font-weight: 800;
-    line-height: 1.1;
+    margin-bottom: 10px;
 }
 
-.hero-title span {
+.highlight {
     color: #00f5c4;
 }
 
-.sub-text {
+.subtitle {
     font-size: 18px;
-    color: #b0bec5;
+    color: #cfd8dc;
     margin-bottom: 30px;
 }
 
-/* ===== Glass Card ===== */
-.main-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(18px);
-    padding: 40px;
-    border-radius: 25px;
-    box-shadow: 0 0 60px rgba(0, 255, 200, 0.15);
-    border: 1px solid rgba(0, 255, 200, 0.2);
+/* ===== Section Card ===== */
+.card {
+    background: rgba(255,255,255,0.05);
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
 }
 
-/* ===== Inputs ===== */
+/* ===== Labels ===== */
+label {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+/* ===== Input Fields ===== */
 .stSelectbox div[data-baseweb="select"],
 .stNumberInput input {
-    background-color: rgba(255,255,255,0.08) !important;
-    color: white !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(0,255,200,0.3) !important;
+    background-color: #f1f3f9 !important;
+    color: black !important;
+    border-radius: 10px !important;
 }
 
 /* ===== Button ===== */
 .stButton > button {
-    background: linear-gradient(90deg, #00f5c4, #00c3ff);
+    background: linear-gradient(90deg, #00f5c4, #00c6ff);
     color: black;
     font-weight: 700;
-    border-radius: 30px;
+    border-radius: 25px;
     height: 50px;
     width: 100%;
     border: none;
@@ -76,67 +82,60 @@ st.markdown("""
 }
 
 .stButton > button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #00f5c4;
+    transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
 
 /* ===== Result Box ===== */
 .result-box {
-    margin-top: 30px;
-    padding: 25px;
-    border-radius: 18px;
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 15px;
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
 }
 
 .approved {
-    background: rgba(0, 255, 200, 0.15);
-    border: 1px solid #00f5c4;
-    color: #00f5c4;
+    background: linear-gradient(90deg, #00c9ff, #92fe9d);
+    color: black;
 }
 
 .rejected {
-    background: rgba(255, 0, 80, 0.15);
-    border: 1px solid #ff0050;
-    color: #ff4d6d;
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    color: white;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# SPLIT LAYOUT
-# -----------------------------
+# -------------------------------
+# Layout
+# -------------------------------
 left, right = st.columns([1.2, 1])
 
-# -----------------------------
-# LEFT SIDE (HERO)
-# -----------------------------
+# -------------------------------
+# LEFT SIDE (Info + Model Performance)
+# -------------------------------
 with left:
-    st.markdown("""
-    <div class="hero-title">
-        Predict Your <span>Loan Approval</span> Instantly
-    </div>
-    <div class="sub-text">
-        AI-powered intelligent credit decision system built using Machine Learning.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="main-title">Predict Your <span class="highlight">Loan Approval</span> Instantly</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">AI-powered intelligent credit decision system built using Machine Learning.</div>', unsafe_allow_html=True)
 
     st.markdown("### 📊 Model Performance")
     st.progress(0.82)
-    st.write("Random Forest Accuracy: **82%**")
+    st.write("Random Forest Accuracy: 82%")
+
     st.progress(0.79)
-    st.write("Gradient Boosting Accuracy: **79%**")
+    st.write("Gradient Boosting Accuracy: 79%")
+
     st.progress(0.78)
-    st.write("Logistic Regression Accuracy: **78%**")
+    st.write("Logistic Regression Accuracy: 78%")
 
-# -----------------------------
-# RIGHT SIDE (FORM CARD)
-# -----------------------------
+# -------------------------------
+# RIGHT SIDE (Form)
+# -------------------------------
 with right:
-    st.markdown('<div class="main-card">', unsafe_allow_html=True)
-
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("### 📝 Applicant Details")
 
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -153,7 +152,7 @@ with right:
 
     if st.button("Check Loan Eligibility"):
 
-        with st.spinner("Analyzing with AI Model..."):
+        with st.spinner("Checking eligibility..."):
             time.sleep(1)
 
         total_income = app_income + co_income
