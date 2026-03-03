@@ -1,137 +1,68 @@
 import streamlit as st
-import numpy as np
+import time
 
-# ---------------- PAGE CONFIG ---------------- #
-st.set_page_config(
-    page_title="Loan Approval System",
-    page_icon="🏦",
-    layout="wide"
-)
+st.set_page_config(page_title="LoanIQ - Loan Approval", layout="centered")
 
-# ---------------- CUSTOM CSS ---------------- #
-st.markdown("""
-<style>
+# Title
+st.title("🏦 LoanIQ - Loan Approval Prediction")
+st.write("Fill applicant details and click predict to see result instantly.")
 
-/* Main background */
-.stApp {
-    background-color: #F4F6FB;
-}
+st.markdown("---")
 
-/* Title */
-.main-title {
-    font-size: 42px;
-    font-weight: 800;
-    background: linear-gradient(90deg, #4F46E5, #7C3AED);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+# =========================
+# Applicant Form
+# =========================
 
-/* Card container */
-.card {
-    background-color: white;
-    padding: 30px;
-    border-radius: 18px;
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.05);
-}
+gender = st.selectbox("Gender", ["Male", "Female"])
+married = st.selectbox("Marital Status", ["Married", "Single"])
+dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
+education = st.selectbox("Education", ["Graduate", "Not Graduate"])
+self_employed = st.selectbox("Self Employed", ["Yes", "No"])
+credit_history = st.selectbox("Credit History", ["Good", "Poor"])
+property_area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
 
-/* Section headers */
-.section-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #4F46E5;
-    margin-bottom: 15px;
-}
+app_income = st.number_input("Applicant Income (Monthly)", min_value=0)
+co_income = st.number_input("Co-Applicant Income (Monthly)", min_value=0)
+loan_amount = st.number_input("Loan Amount", min_value=0)
+loan_term = st.number_input("Loan Term (Months)", min_value=0)
 
-/* Buttons */
-.stButton>button {
-    background: linear-gradient(90deg, #4F46E5, #7C3AED);
-    color: white;
-    border-radius: 10px;
-    padding: 0.7rem 1.5rem;
-    border: none;
-    font-weight: 600;
-    font-size: 16px;
-}
+st.markdown("")
 
-.stButton>button:hover {
-    background: linear-gradient(90deg, #4338CA, #6D28D9);
-}
+# =========================
+# Prediction Button
+# =========================
 
-/* Input fields */
-div[data-baseweb="select"] > div,
-div[data-baseweb="input"] > div {
-    border-radius: 10px;
-}
+if st.button("⚡ Predict Loan Approval"):
 
-</style>
-""", unsafe_allow_html=True)
+    # Fake loading effect
+    with st.spinner("Processing..."):
+        time.sleep(1)
 
-# ---------------- HEADER ---------------- #
-st.markdown("<h1 class='main-title'>🏦 Loan Approval System</h1>", unsafe_allow_html=True)
-st.write("")
-
-# ---------------- CARD START ---------------- #
-st.markdown("<div class='card'>", unsafe_allow_html=True)
-
-st.markdown("<div class='section-title'>Enter Applicant Details</div>", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-
-with col1:
-    gender = st.selectbox("Gender", ["Male", "Female"])
-    married = st.selectbox("Marital Status", ["Yes", "No"])
-    dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
-    education = st.selectbox("Education", ["Graduate", "Not Graduate"])
-    self_employed = st.selectbox("Self Employed", ["Yes", "No"])
-
-with col2:
-    applicant_income = st.number_input("Applicant Income", min_value=0, value=40000)
-    coapplicant_income = st.number_input("Coapplicant Income", min_value=0, value=20000)
-    loan_amount = st.number_input("Loan Amount", min_value=0, value=10000)
-    loan_term = st.number_input("Loan Term (days)", min_value=0, value=360)
-    credit_history = st.selectbox("Credit History", [1, 0])
-
-st.write("")
-predict_btn = st.button("Check Loan Eligibility")
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ---------------- SIMPLE DUMMY PREDICTION ---------------- #
-def simple_prediction(applicant_income, loan_amount, credit_history):
-    if credit_history == 1 and applicant_income > loan_amount * 2:
-        return 1
+    # Simple Manual Logic (You can replace with ML model)
+    if credit_history == "Good" and app_income + co_income > 20000:
+        result = "APPROVED"
+        color = "green"
     else:
-        return 0
+        result = "REJECTED"
+        color = "red"
 
-# ---------------- RESULT SECTION ---------------- #
-if predict_btn:
-    result = simple_prediction(applicant_income, loan_amount, credit_history)
+    st.markdown("---")
 
-    st.write("")
+    # =========================
+    # Result Section (Below Button)
+    # =========================
 
-    if result == 1:
-        st.markdown("""
-        <div style='background-color:#ECFDF5;
-                    padding:25px;
-                    border-radius:15px;
-                    color:#065F46;
-                    font-weight:700;
-                    font-size:20px;
-                    text-align:center;
-                    box-shadow:0 4px 12px rgba(16,185,129,0.2);'>
-        ✅ Loan Approved
+    st.markdown(
+        f"""
+        <div style="
+            padding:20px;
+            border-radius:10px;
+            background-color:#111;
+            text-align:center;
+            border: 2px solid {color};
+        ">
+            <h2 style="color:{color};">Loan {result}</h2>
         </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style='background-color:#FEF2F2;
-                    padding:25px;
-                    border-radius:15px;
-                    color:#7F1D1D;
-                    font-weight:700;
-                    font-size:20px;
-                    text-align:center;
-                    box-shadow:0 4px 12px rgba(239,68,68,0.2);'>
-        ❌ Loan Rejected
-        </div>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
