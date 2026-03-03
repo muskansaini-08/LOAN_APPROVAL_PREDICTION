@@ -10,15 +10,28 @@ st.set_page_config(
 )
 
 # -------------------------------
-# Custom CSS (Dark Futuristic UI)
+# FULL DARK OVERRIDE (No config file needed)
 # -------------------------------
 st.markdown("""
 <style>
 
-body {
-    background-color: #0E1117;
+/* Whole page background */
+html, body, [class*="css"]  {
+    background-color: #0E1117 !important;
+    color: white !important;
 }
 
+/* Main app container */
+[data-testid="stAppViewContainer"] {
+    background-color: #0E1117 !important;
+}
+
+/* Remove white blocks */
+.block-container {
+    padding-top: 2rem;
+}
+
+/* Title */
 .main-title {
     text-align: center;
     font-size: 42px;
@@ -26,28 +39,27 @@ body {
     color: #00F5A0;
 }
 
+/* Subtitle */
 .sub-text {
     text-align: center;
     font-size: 18px;
-    color: #AAAAAA;
+    color: #BBBBBB;
     margin-bottom: 30px;
 }
 
-.stButton>button {
+/* Button */
+.stButton > button {
     background: linear-gradient(90deg, #00F5A0, #00C9FF);
-    color: black;
+    color: black !important;
     font-size: 18px;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 12px;
     height: 50px;
     width: 100%;
     border: none;
 }
 
-.stButton>button:hover {
-    opacity: 0.85;
-}
-
+/* Result Box */
 .result-box {
     padding: 25px;
     border-radius: 12px;
@@ -58,13 +70,13 @@ body {
 }
 
 .approved {
-    background-color: #0f5132;
+    background-color: #062f1f;
     color: #00ff88;
     border: 2px solid #00ff88;
 }
 
 .rejected {
-    background-color: #5a1a1a;
+    background-color: #3b0d0d;
     color: #ff4d4d;
     border: 2px solid #ff4d4d;
 }
@@ -81,9 +93,8 @@ st.markdown('<div class="sub-text">Fill applicant details and click predict to s
 st.markdown("---")
 
 # -------------------------------
-# Applicant Form
+# Form
 # -------------------------------
-
 gender = st.selectbox("Gender", ["Male", "Female"])
 married = st.selectbox("Marital Status", ["Married", "Single"])
 dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
@@ -97,28 +108,20 @@ co_income = st.number_input("Co-Applicant Income (Monthly)", min_value=0)
 loan_amount = st.number_input("Loan Amount", min_value=0)
 loan_term = st.number_input("Loan Term (Months)", min_value=0)
 
-st.markdown("")
-
 # -------------------------------
-# Predict Button
+# Button
 # -------------------------------
-
 if st.button("⚡ Predict Loan Approval"):
 
     with st.spinner("Processing..."):
         time.sleep(1)
 
-    # Simple Approval Logic (Replace with ML model if needed)
     total_income = app_income + co_income
 
     if credit_history == "Good" and total_income > 20000:
         result = "APPROVED"
     else:
         result = "REJECTED"
-
-    # -------------------------------
-    # Result Section (Below Button)
-    # -------------------------------
 
     if result == "APPROVED":
         st.markdown(
