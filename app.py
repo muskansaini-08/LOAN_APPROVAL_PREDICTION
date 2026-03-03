@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, accuracy_score
 
 # ----------------------------------
 # PAGE CONFIG
@@ -22,12 +21,10 @@ st.markdown("""
     background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
     color: white;
 }
-
 label {
     color: white !important;
     font-weight: 600;
 }
-
 div.stButton > button {
     background: linear-gradient(90deg,#00c853,#1de9b6);
     color: white;
@@ -38,7 +35,6 @@ div.stButton > button {
     border: none;
     font-weight: bold;
 }
-
 div.stButton > button:hover {
     background: linear-gradient(90deg,#00b248,#00e5ff);
 }
@@ -49,7 +45,6 @@ div.stButton > button:hover {
 # LOAD MODEL
 # ----------------------------------
 model = pickle.load(open("loan_model.pkl", "rb"))
-st.write("Model expects:", model.n_features_in_)
 
 # ----------------------------------
 # HEADER
@@ -75,11 +70,11 @@ with col1:
     loan_amount = st.number_input("Loan Amount (in thousands)", value=150)
     loan_term = st.selectbox("Loan Term (Months)", [360, 180, 120, 60])
     credit_history = st.selectbox("Credit History", ["Good", "Bad"])
+
 # ----------------------------------
-# PREPROCESS FUNCTION (CORRECT ENCODING)
+# PREPROCESS FUNCTION
 # ----------------------------------
 def preprocess():
-
     dependents_map = {"0":0, "1":1, "2":2, "3+":3}
 
     data = [
@@ -96,6 +91,7 @@ def preprocess():
     ]
 
     return np.array(data).reshape(1, -1)
+
 # ----------------------------------
 # PREDICTION SECTION
 # ----------------------------------
@@ -111,7 +107,7 @@ with col2:
         probability = model.predict_proba(input_data)[0][1]
         score = int(probability * 100)
 
-        # RESULT CARD
+        # RESULT
         if prediction == 1:
             st.success("✅ LOAN APPROVED")
         else:
@@ -136,36 +132,33 @@ with col2:
         # ----------------------------------
         # FEATURE IMPORTANCE
         # ----------------------------------
-       # ----------------------------------
-# FEATURE IMPORTANCE
-# ----------------------------------
-if hasattr(model, "feature_importances_"):
+        if hasattr(model, "feature_importances_"):
 
-    st.subheader("📊 Feature Importance")
+            st.subheader("📊 Feature Importance")
 
-    feature_names = [
-        "Gender",
-        "Married",
-        "Dependents",
-        "Education",
-        "SelfEmployed",
-        "ApplicantIncome",
-        "CoappIncome",
-        "LoanAmount",
-        "LoanTerm",
-        "CreditHistory"
-    ]
+            feature_names = [
+                "Gender",
+                "Married",
+                "Dependents",
+                "Education",
+                "SelfEmployed",
+                "ApplicantIncome",
+                "CoappIncome",
+                "LoanAmount",
+                "LoanTerm",
+                "CreditHistory"
+            ]
 
-    fig, ax = plt.subplots()
-    ax.barh(feature_names, model.feature_importances_)
-    ax.set_title("Feature Impact on Loan Decision")
+            fig, ax = plt.subplots()
+            ax.barh(feature_names, model.feature_importances_)
+            ax.set_title("Feature Impact on Loan Decision")
+            st.pyplot(fig)
 
-    st.pyplot(fig)
         # ----------------------------------
-        # MODEL PERFORMANCE (SIMPLE)
+        # MODEL PERFORMANCE
         # ----------------------------------
         st.subheader("📈 Model Performance")
-        st.write("Model Accuracy: 82%")  # Replace with real accuracy if saved
+        st.write("Model Accuracy: 82%")
 
         # ----------------------------------
         # DOWNLOAD REPORT
