@@ -75,19 +75,12 @@ with col1:
     loan_amount = st.number_input("Loan Amount (in thousands)", value=150)
     loan_term = st.selectbox("Loan Term (Months)", [360, 180, 120, 60])
     credit_history = st.selectbox("Credit History", ["Good", "Bad"])
-    property_area = st.selectbox("Property Area", ["Rural", "Semiurban", "Urban"])
-
 # ----------------------------------
 # PREPROCESS FUNCTION (CORRECT ENCODING)
 # ----------------------------------
 def preprocess():
 
     dependents_map = {"0":0, "1":1, "2":2, "3+":3}
-
-    # One-hot encoding for property area
-    rural = 1 if property_area == "Rural" else 0
-    semiurban = 1 if property_area == "Semiurban" else 0
-    urban = 1 if property_area == "Urban" else 0
 
     data = [
         1 if gender=="Male" else 0,
@@ -99,14 +92,10 @@ def preprocess():
         coapp_income,
         loan_amount,
         loan_term,
-        1 if credit_history=="Good" else 0,
-        rural,
-        semiurban,
-        urban
+        1 if credit_history=="Good" else 0
     ]
 
     return np.array(data).reshape(1, -1)
-
 # ----------------------------------
 # PREDICTION SECTION
 # ----------------------------------
