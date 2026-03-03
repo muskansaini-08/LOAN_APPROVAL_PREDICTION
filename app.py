@@ -136,25 +136,31 @@ with col2:
         # ----------------------------------
         # FEATURE IMPORTANCE
         # ----------------------------------
-        if hasattr(model, "feature_importances_"):
+       # ----------------------------------
+# FEATURE IMPORTANCE
+# ----------------------------------
+if hasattr(model, "feature_importances_"):
 
-            st.subheader("📊 Feature Importance")
+    st.subheader("📊 Feature Importance")
 
-            feature_names = [
-                "Gender","Married","Dependents","Education","SelfEmployed",
-                "ApplicantIncome","CoappIncome","LoanAmount",
-                "LoanTerm","CreditHistory","PropertyArea"
-            ]
+    feature_names = [
+        "Gender",
+        "Married",
+        "Dependents",
+        "Education",
+        "SelfEmployed",
+        "ApplicantIncome",
+        "CoappIncome",
+        "LoanAmount",
+        "LoanTerm",
+        "CreditHistory"
+    ]
 
-            fig, ax = plt.subplots()
-            ax.barh(feature_names, model.feature_importances_)
-            ax.set_title("Feature Impact", color="white")
-            ax.set_facecolor("#1E2228")
-            fig.patch.set_facecolor("#0E1117")
-            ax.tick_params(colors="white")
+    fig, ax = plt.subplots()
+    ax.barh(feature_names, model.feature_importances_)
+    ax.set_title("Feature Impact on Loan Decision")
 
-            st.pyplot(fig)
-
+    st.pyplot(fig)
         # ----------------------------------
         # MODEL PERFORMANCE (SIMPLE)
         # ----------------------------------
